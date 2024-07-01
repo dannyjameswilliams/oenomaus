@@ -35,7 +35,71 @@ from gifmaker import do_gif
 log = True
 
 # which text channels to monitor for anime detection
-noanime_channels = ["the_ludus"]
+noanime_channels = ["the_ludus", "streets-of-capua"]
+
+# which text channel to monitor for new joiners
+recruit_channel  = "the_sands"
+
+# name of the role which is given to new joiners
+new_role = "freshly-bought-slave"
+
+# name of the role which is given to successful joiners (passed the test)
+recruit_role = "Recruit"
+
+# name of the role which is exempt from anime roles (default is champion of capua)
+exempt_role = "Champion of Capua"
+
+# name of role of admin role
+admin_role = "admin"
+
+# threshold for passing the test of "what lies beneath your feet?"
+greeting_pass_threshold = 0.7
+
+
+
+# MAIN FUNCTIONS
+# --------------
+
+
+# log flag for printing output to console
+log = True
+
+# which text channels to monitor for anime detection
+noanime_channels = ["the_ludus", "streets-of-capua"]
+
+# which text channel to monitor for new joiners
+recruit_channel  = "the_sands"
+
+# name of the role which is given to new joiners
+new_role = "freshly-bought-slave"
+
+# name of the role which is given to successful joiners (passed the test)
+recruit_role = "Recruit"
+
+# name of the role which is exempt from anime roles (default is champion of capua)
+exempt_role = "Champion of Capua"
+
+# name of role of admin role
+admin_role = "admin"
+
+# threshold for passing the test of "what lies beneath your feet?"
+greeting_pass_threshold = 0.7
+
+# Set up proper answers to greet in advance
+goldenanswer = "Sacred ground Doctore, watered with tears of blood."
+sandanswer = "Sand?"
+
+
+
+# MAIN FUNCTIONS
+# --------------
+
+
+# log flag for printing output to console
+log = True
+
+# which text channels to monitor for anime detection
+noanime_channels = ["the_ludus", "streets-of-capua"]
 
 # which text channel to monitor for new joiners
 recruit_channel  = "the_sands"
@@ -330,10 +394,6 @@ if __name__ == "__main__":
     # Set up the current user as who will be greeted
     global current_user
     current_user = None
-
-    # Set up proper answers to greet in advance
-    goldenanswer = "Sacred ground Doctore, watered with tears of blood."
-    sandanswer = "Sand?"
 
     # default threshold is 0.65. any probability below that will not be classified.
     global model
