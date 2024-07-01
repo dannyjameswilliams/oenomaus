@@ -290,7 +290,7 @@ async def detect_anime(message):
                 if log:
                     print(f"\nImage thumbnail detected: {im_path}")
 
-                is_anime = model.predict(im_path):
+                is_anime = model.predict(im_path)
 
                 if is_anime:
                     break
