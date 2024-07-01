@@ -1,3 +1,4 @@
 keys.py
 mytoken.py
 resources/testanime.png
+./__pycache__/
