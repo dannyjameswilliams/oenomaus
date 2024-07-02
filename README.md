@@ -38,12 +38,24 @@ If this reply is not given, the user is deemed unfit to be a gladiator, and remo
 
 ## Installation
 
-Clone the github repository and create a file called `keys.py` in the root directory, with a single variable called `TOKEN` containing your [Discord API Token](https://discord.com/developers/docs/intro) to run the bot on. 
-You must set up the bot within the [Discord Developer Portal](https://discord.com/developers/applications) Then run 
+First, clone the github repository via
+```bash
+git clone https://github.com/dannyjameswilliams/oenomaus/
+```
+You must have Python installed, for which I used Python version 3.8.13, but later versions *should* work also. Provided you also have [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) installed, run
+```bash
+pip install -r requirements.txt
+```
+in the root directory to install all prerequisite packages. Then, create a file called `keys.py` in the root directory, with a single variable called `TOKEN` containing your [Discord API Token](https://discord.com/developers/docs/intro) to run the bot on. 
+You must set up the bot within the [Discord Developer Portal](https://discord.com/developers/applications). 
+
+## Usage
+
+To activate the bot, run 
 ```bash
 python bot.py
 ```
-to activate Oenomaus.
+This will run Oenomaus locally in the terminal, and will continue to be run until it is closed. Alternatively, I have provided the `Dockerfile` within this repository so that you may set up a Docker container to run the python code, and also separately have an [Oenomaus Docker repository](https://hub.docker.com/repository/docker/dannyjameswilliams/oenomaus/general) on the Docker hub, which can be cloned and run completely independently of this repository.
 
 To configure Oenomaus, there are a number of variables to tune within the top of `bot.py`, all commented detailing what they do. Most importantly, you should configure:
 - `noanime_channels` to include all channels you would like Oenomaus to be monitoring and deleting anime images on, 
