@@ -2,7 +2,9 @@
 
 > *No longer shall you be my Doctore. You will assume the mantle of lanista, and be warmly greeted by your name, Oenomaus.*
 
-**A discord bot that automatically detects anime-style images using a deep learning model and removes them in an authoritative fashion.**
+**A deep learning model to automatically detect anime-style images, using a convolutional neural network fine-tuned from ResNet18, implemented as a discord bot, which removes anime with deadly intent.**
+
+
 <p align="center">
   <a href="https://example.com">
     <img src="https://raw.githubusercontent.com/dannyjameswilliams/oenomaus/main/example.gif?token=GHSAT0AAAAAACTPR75NBERWYZ64Z5VDD4Q6ZUCYTDA" alt="Example Anime Removal">
@@ -49,7 +51,6 @@ To configure Oenomaus, there are a number of variables to tune within the top of
 - `new_role` to the name of the Discord role (which I recommend has zero permissions except for writing in `recruit_channel`) all new members will have,
 - `recruit_role` to the name of the Discord role for those who pass the welcoming test (e.g. this can give them the regular server role),
 - `exempt_role` to the name of the Discord role which is exempt from Oenomaus's gaze, and is free to post any images they would like.
-
 
 
 
