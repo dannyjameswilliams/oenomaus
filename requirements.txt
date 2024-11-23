@@ -11,3 +11,4 @@ imageio-ffmpeg==0.4.9
 scipy --only-binary scipy
 anthropic
 pypdf2
+psutil

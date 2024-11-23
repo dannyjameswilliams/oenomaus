@@ -36,6 +36,14 @@ from gifmaker import do_gif
 # load chat function
 from chat import generate_response
 
+import psutil
+
+def print_memory_usage():
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    print(f"Memory Usage: {memory_info.rss / (1024 ** 2):.2f} MB")
+
+print_memory_usage()
 
 # MAIN FUNCTIONS
 # --------------
@@ -505,5 +513,7 @@ if __name__ == "__main__":
         else:
             await ctx.send("You are a man who stands only for himself, and would betray the gods to gain what he desires.")
 
+    print_memory_usage()
+    
     # this always comes at the end
     bot.run(TOKEN)
