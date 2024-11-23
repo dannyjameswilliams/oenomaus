@@ -12,3 +12,4 @@ scipy --only-binary scipy
 anthropic
 pypdf2
 psutil
+flask

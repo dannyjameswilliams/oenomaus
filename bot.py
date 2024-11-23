@@ -38,6 +38,13 @@ from chat import generate_response
 
 import psutil
 
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running"
+
 def print_memory_usage():
     process = psutil.Process()
     memory_info = process.memory_info()
@@ -380,7 +387,10 @@ async def respond_to_message(message, channel):
 
 if __name__ == "__main__":
 
-
+    # Start the Flask server in a separate thread
+    import threading
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
+    
     # Set up the current user as who will be greeted
     global current_user
     current_user = None
@@ -388,8 +398,6 @@ if __name__ == "__main__":
     # default threshold is 0.65. any probability below that will not be classified.
     global model
     model = animeKiller("model", threshold = 0.65)
-    
-
 
     # -- Set up bot API
 
