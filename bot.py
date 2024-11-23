@@ -34,7 +34,7 @@ TOKEN = os.getenv("TOKEN")
 from gifmaker import do_gif
 
 # load chat function
-from chat import generate_response
+from chat import generate_response, initialise_message_history
 
 import psutil
 
@@ -380,7 +380,8 @@ async def respond_to_message(message, channel):
     """
     Respond to a message from a user.
     """
-    response = generate_response(message.content)
+    global message_history
+    response, message_history = generate_response(message.content, message_history)
     await channel.send(response)
 
 
@@ -398,6 +399,10 @@ if __name__ == "__main__":
     # default threshold is 0.65. any probability below that will not be classified.
     global model
     model = animeKiller("model", threshold = 0.65)
+
+    # set up message history for chat
+    global message_history
+    message_history = initialise_message_history()
 
     # -- Set up bot API
 
