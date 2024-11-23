@@ -35,10 +35,7 @@ class animeKiller():
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])
-        
-        
-        
+            ])      
 
     def _load_model(self, path):
         self.model = torch.load(path)
@@ -66,12 +63,13 @@ class animeKiller():
             outputs = self.model(X)
             
             _, pred = torch.max(outputs, 1)
+            probs = torch.sigmoid(outputs[:, 1]).flatten()
+            print(f"probs: {probs}")
             if self.log:
-                print(f"outputs: {(outputs)}")
                 print("\nGif frame predictions:")
                 print(pred)
 
-            return (pred.float().mean() >= 0.5).item()
+            return pred.float().mean().item()
 
         # If it is a regular image, a normal forward pass of the model
         else:
@@ -82,11 +80,6 @@ class animeKiller():
             probs = torch.sigmoid(outputs).flatten()
 
             if self.log:
-                print(f"outputs: {(outputs.flatten())}")
                 print(f"probs: {(probs.flatten())}")
-                print("\nStrict prediction:")
-                print(pred)
-                print("\nNon-strict prediction:")
-                print((outputs[0][1] > self.threshold).item())
 
-            return (probs[1] > self.threshold).item()
+            return probs[1].item()

@@ -20,41 +20,21 @@ import asyncio
 # Sequence Matcher for testing opening line
 from difflib import SequenceMatcher
 
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Load the anime killer model as a class (defined separately)
 from animekiller import animeKiller
 
-# discord API token is hidden within a separate file 
-from keys import TOKEN
+# get the discord token from the environment variables
+import os
+load_dotenv()
+TOKEN = os.getenv("TOKEN")
 
 # load function to whip anime images to pieces
 from gifmaker import do_gif
 
-# log flag for printing output to console
-log = True
-
-# which text channels to monitor for anime detection
-noanime_channels = ["the_ludus", "streets-of-capua"]
-
-# which text channel to monitor for new joiners
-recruit_channel  = "the_sands"
-
-# name of the role which is given to new joiners
-new_role = "freshly-bought-slave"
-
-# name of the role which is given to successful joiners (passed the test)
-recruit_role = "Recruit"
-
-# name of the role which is exempt from anime roles (default is champion of capua)
-exempt_role = "Champion of Capua"
-
-# name of role of admin role
-admin_role = "admin"
-
-# threshold for passing the test of "what lies beneath your feet?"
-greeting_pass_threshold = 0.7
-
+# load chat function
+from chat import generate_response
 
 
 # MAIN FUNCTIONS
@@ -84,41 +64,17 @@ admin_role = "admin"
 
 # threshold for passing the test of "what lies beneath your feet?"
 greeting_pass_threshold = 0.7
+
+# threshold for detecting anime
+global anime_threshold
+anime_threshold = 0.7
+
+# threshold for being given a warning
+warning_threshold = 0.6
 
 # Set up proper answers to greet in advance
 goldenanswer = "Sacred ground Doctore, watered with tears of blood."
 sandanswer = "Sand?"
-
-
-
-# MAIN FUNCTIONS
-# --------------
-
-
-# log flag for printing output to console
-log = True
-
-# which text channels to monitor for anime detection
-noanime_channels = ["the_ludus", "streets-of-capua"]
-
-# which text channel to monitor for new joiners
-recruit_channel  = "the_sands"
-
-# name of the role which is given to new joiners
-new_role = "freshly-bought-slave"
-
-# name of the role which is given to successful joiners (passed the test)
-recruit_role = "Recruit"
-
-# name of the role which is exempt from anime roles (default is champion of capua)
-exempt_role = "Champion of Capua"
-
-# name of role of admin role
-admin_role = "admin"
-
-# threshold for passing the test of "what lies beneath your feet?"
-greeting_pass_threshold = 0.7
-
 
 
 # MAIN FUNCTIONS
@@ -271,6 +227,7 @@ async def detect_anime(message):
 
     # pre-defined variables
     is_anime = False
+    warning_anime = False
     im_path  = ""
     message_lines = np.array(message.content.split("\n"))
 
@@ -290,7 +247,9 @@ async def detect_anime(message):
         if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
 
             im_path = attachment.url
-            is_anime = model.predict(im_path)
+            anime_prob = model.predict(im_path)
+            is_anime = anime_prob > anime_threshold
+            warning_anime = anime_prob > warning_threshold
 
             if log:
                 print(f"Found image attachment named {attachment.filename} in message, checking...\n")
@@ -304,6 +263,7 @@ async def detect_anime(message):
 
        # Possible to have multiple embeds, remove message if any are flagged
        any_anime = []
+       any_warning_anime = []
        for embed in message.embeds:
             if (embed.to_dict()["video"]["url"].endswith(".mp4")):
                
@@ -325,11 +285,13 @@ async def detect_anime(message):
                     print(f"Found GIF with URL: {im_path}")
 
                 # Finally, predict
-                any_anime.append(model.predict(im_path))
+                anime_prob = model.predict(im_path)
+                any_anime.append(anime_prob > anime_threshold)
+                any_warning_anime.append(anime_prob > warning_threshold)
                 
             # single flag from any of the embeds is enough to flag the message
             is_anime = any(any_anime)
-            
+            warning_anime = any(any_warning_anime)
 
     
     # Next, check for directly embedded gifs (like sent in a message, or gboard)
@@ -337,9 +299,11 @@ async def detect_anime(message):
     if not is_anime and any(which_gifs2):
         
         for im_path in message_lines[which_gifs2]:
-            is_anime = model.predict(im_path)
+            anime_prob = model.predict(im_path)
+            is_anime = anime_prob > anime_threshold
+            warning_anime = anime_prob > warning_threshold
 
-            if is_anime:
+            if is_anime or warning_anime:
                 break
             
             
@@ -354,16 +318,19 @@ async def detect_anime(message):
                 if log:
                     print(f"\nImage thumbnail detected: {im_path}")
 
-                is_anime = model.predict(im_path)
+                anime_prob = model.predict(im_path)
+                is_anime = anime_prob > anime_threshold
+                warning_anime = anime_prob > warning_threshold
 
-                if is_anime:
+                if is_anime or warning_anime:
                     break
                 
     if log:
         print(f"Anime detected: {is_anime}")
+        print(f"Warning anime detected: {warning_anime}")
 
     # Return whether anime was detected and the image path (for gif whipping)
-    return is_anime, im_path
+    return is_anime, warning_anime, im_path
 
 async def whip_anime(channel, im_path):
     """
@@ -385,6 +352,21 @@ async def remove_anime_message(message, channel):
     await channel.send(f"""
         {message.author.name}, we will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits.
     """)
+
+async def warning_anime_message(message, channel):
+    """
+    Send a warning message if anime is detected but not enough to remove the message.
+    """
+    await channel.send(f"""
+        {message.author.name}, you are testing my patience.
+    """)
+
+async def respond_to_message(message, channel):
+    """
+    Respond to a message from a user.
+    """
+    response = generate_response(message.content)
+    await channel.send(response)
 
 
 
@@ -443,6 +425,10 @@ if __name__ == "__main__":
     @bot.event
     async def on_message(message):
 
+        # ignore messages from Oenomaus
+        if message.author.name.lower() == "oenomaus":
+            return
+
         if log:
             print(f"({message.channel.name}) {message.author.name}: {message.content}")
             print("\n")
@@ -456,8 +442,6 @@ if __name__ == "__main__":
             print(f"Recruit channel ID = {recruit_channel_0.id}")
             print(f"No anime channel IDs = {noanime_channel_ids}")
 
-
-
         if message.channel.id == recruit_channel_0.id:
             if log:
                 print(f"Responding to new recruit in {recruit_channel_0.name}")
@@ -468,7 +452,27 @@ if __name__ == "__main__":
             if log:
                 print(f"Checking for anime in {message.channel.name}")
 
-            is_anime, im_path = await detect_anime(message)
+            if (
+                "oenomaus" in message.content.lower() or 
+                "doctore" in message.content.lower() or
+                "oen" in message.content.lower() or 
+                "dotore" in message.content.lower() or
+                "dottore" in message.content.lower() or
+                "oenamaus" in message.content.lower() or
+                "oenemaus" in message.content.lower() or
+                "oenomeus" in message.content.lower() or
+                "onomaeus" in message.content.lower() or
+                "onamaus" in message.content.lower() or
+                "onomeus" in message.content.lower() or
+                "oenamaus" in message.content.lower() or
+                "oenemaus" in message.content.lower() or
+                "oenomeus" in message.content.lower() or
+                "oenny" in message.content.lower() 
+            ):
+                await respond_to_message(message, message.channel)
+            
+            is_anime, warning_anime, im_path = await detect_anime(message)
+            
             if is_anime: # remove message if anime and send a message reply
 
                 if log:
@@ -476,6 +480,8 @@ if __name__ == "__main__":
 
                 await whip_anime(message.channel, im_path)
                 await remove_anime_message(message, message.channel)
+            elif warning_anime: # send a warning message
+                await warning_anime_message(message, message.channel)
         
         bot.process_commands(message)
 
@@ -499,6 +505,5 @@ if __name__ == "__main__":
         else:
             await ctx.send("You are a man who stands only for himself, and would betray the gods to gain what he desires.")
 
-    
     # this always comes at the end
     bot.run(TOKEN)
