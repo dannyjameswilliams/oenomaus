@@ -459,25 +459,6 @@ if __name__ == "__main__":
 
             if log:
                 print(f"Checking for anime in {message.channel.name}")
-
-            if (
-                "oenomaus" in message.content.lower() or 
-                "doctore" in message.content.lower() or
-                "oen" in message.content.lower() or 
-                "dotore" in message.content.lower() or
-                "dottore" in message.content.lower() or
-                "oenamaus" in message.content.lower() or
-                "oenemaus" in message.content.lower() or
-                "oenomeus" in message.content.lower() or
-                "onomaeus" in message.content.lower() or
-                "onamaus" in message.content.lower() or
-                "onomeus" in message.content.lower() or
-                "oenamaus" in message.content.lower() or
-                "oenemaus" in message.content.lower() or
-                "oenomeus" in message.content.lower() or
-                "oenny" in message.content.lower() 
-            ):
-                await respond_to_message(message, message.channel)
             
             is_anime, warning_anime, im_path = await detect_anime(message)
             
@@ -491,6 +472,24 @@ if __name__ == "__main__":
             elif warning_anime: # send a warning message
                 await warning_anime_message(message, message.channel)
         
+        if (
+            "oenomaus" in message.content.lower() or 
+            "doctore" in message.content.lower() or
+            "oen" in message.content.lower() or 
+            "dotore" in message.content.lower() or
+            "dottore" in message.content.lower() or
+            "oenamaus" in message.content.lower() or
+            "oenemaus" in message.content.lower() or
+            "oenomeus" in message.content.lower() or
+            "onomaeus" in message.content.lower() or
+            "onamaus" in message.content.lower() or
+            "onomeus" in message.content.lower() or
+            "oenamaus" in message.content.lower() or
+            "oenemaus" in message.content.lower() or
+            "oenomeus" in message.content.lower() or
+            "oenny" in message.content.lower() 
+        ):
+            await respond_to_message(message, message.channel)
         bot.process_commands(message)
 
     @bot.command(name="threshold")
@@ -514,6 +513,6 @@ if __name__ == "__main__":
             await ctx.send("You are a man who stands only for himself, and would betray the gods to gain what he desires.")
 
     print_memory_usage()
-    
+
     # this always comes at the end
     bot.run(TOKEN)
