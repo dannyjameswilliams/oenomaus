@@ -494,7 +494,7 @@ if __name__ == "__main__":
         ):
             await respond_to_message(message, message.channel)
 
-        bot.process_commands(message)
+        await bot.process_commands(message)
 
     @bot.command(name="threshold")
     async def change_threshold(ctx, *args):
