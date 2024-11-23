@@ -440,10 +440,13 @@ if __name__ == "__main__":
         if log:
             print(f"({message.channel.name}) {message.author.name}: {message.content}")
             print("\n")
-
-        # get channel IDs
+        
         recruit_channel_0   = discord.utils.get(message.guild.text_channels, name=recruit_channel)
-        noanime_channel_ids = [discord.utils.get(message.guild.text_channels, name=channel).id for channel in noanime_channels]
+
+        noanime_channel_ids = []
+        for channel in noanime_channels:
+            if discord.utils.get(message.guild.text_channels, name=channel) is not None:
+                noanime_channel_ids.append(discord.utils.get(message.guild.text_channels, name=channel).id)
         
         if log:
             print(f"Message channel ID = {message.channel.id}")
@@ -490,6 +493,7 @@ if __name__ == "__main__":
             "oenny" in message.content.lower() 
         ):
             await respond_to_message(message, message.channel)
+
         bot.process_commands(message)
 
     @bot.command(name="threshold")
