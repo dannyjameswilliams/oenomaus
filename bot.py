@@ -363,6 +363,9 @@ async def remove_anime_message(message, channel):
     """
     Simple function, if anime is detected, remove the message and send a reply.
     """
+    global message_history
+    message_history.append({"role": "user", "content": [{"type": "text", "text": message.content}]})
+    message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, We will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits. [*You removed their message as it contained an image of anime.*]"}]})
     await message.delete()
     await channel.send(f"""
         {message.author.name}, we will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits.
@@ -372,6 +375,9 @@ async def warning_anime_message(message, channel):
     """
     Send a warning message if anime is detected but not enough to remove the message.
     """
+    global message_history
+    message_history.append({"role": "user", "content": [{"type": "text", "text": message.content}]})
+    message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, you are testing my patience. [*You warned them as they sent an image of something that might be anime.*]"}]})
     await channel.send(f"""
         {message.author.name}, you are testing my patience.
     """)
