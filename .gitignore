@@ -1,6 +1,6 @@
 keys.py
 mytoken.py
 resources/testanime.png
-./__pycache__/
+./__pycache__/*
 .venv/
 .env
