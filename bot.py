@@ -71,6 +71,9 @@ warning_threshold = 0.6
 goldenanswer = "Sacred ground Doctore, watered with tears of blood."
 sandanswer = "Sand?"
 
+# who is the dominus?
+dominus = "danman966"
+
 
 # MAIN FUNCTIONS
 # --------------
@@ -231,7 +234,7 @@ async def detect_anime(message):
     if exempt_role in role_names:
         if log:
             print("User is exempt from anime detection, as they are the Champion of Capua.")
-        return False
+        return False, False, ""
 
 
     # First check: message has an image attachment
@@ -360,19 +363,29 @@ async def warning_anime_message(message, channel):
     """
     global message_history
 
-    message_history.append({"role": "user", "content": [{"type": "text", "text": f"{message.author.name}: {message.content} [*This user message contained an image/GIF of something that might be anime, which you warned them about.*]"}]})
-    message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, you are testing my patience."}]})
+    # message_history.append({"role": "user", "content": [{"type": "text", "text": f"{message.author.name}: {message.content} [*This user message contained an image/GIF of something that might be anime, which you warned them about.*]"}]})
+    # message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, you are testing my patience."}]})
     
-    await channel.send(f"""
-        {message.author.name}, you are testing my patience.
-    """)
+    # await channel.send(f"""
+    #     {message.author.name}, you are testing my patience.
+    # """)
+    await message.add_reaction(":oenW:")
 
 async def respond_to_message(message, channel):
     """
     Respond to a message from a user.
     """
     global message_history
-    response, message_history = generate_response(message.content, message_history, message.author.name)
+
+    role_names = [role.name for role in message.author.roles]
+    if exempt_role in role_names:
+        user_name = f"Champion of Capua ({message.author.name})"
+    elif message.author.name == dominus:
+        user_name = f"Dominus ({message.author.name})"
+    else:
+        user_name = message.author.name
+
+    response, message_history = generate_response(message.content, message_history, user_name)
     await channel.send(response)
 
 
