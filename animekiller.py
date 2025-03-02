@@ -38,7 +38,7 @@ class animeKiller():
             ])      
 
     def _load_model(self, path):
-        self.model = torch.load(path)
+        self.model = torch.load(path, weights_only = False)
         if self.log:
             print(f"Loaded model at path: /{path}")
 

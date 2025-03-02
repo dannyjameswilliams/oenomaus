@@ -28,33 +28,13 @@ from animekiller import animeKiller
 # get the discord token from the environment variables
 import os
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 # load function to whip anime images to pieces
 from gifmaker import do_gif
 
 # load chat function
 from chat import generate_response, initialise_message_history
-
-import psutil
-
-from flask import Flask
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is running"
-
-def print_memory_usage():
-    process = psutil.Process()
-    memory_info = process.memory_info()
-    print(f"Memory Usage: {memory_info.rss / (1024 ** 2):.2f} MB")
-
-print_memory_usage()
-
-# MAIN FUNCTIONS
-# --------------
-
 
 # log flag for printing output to console
 log = True
@@ -353,7 +333,7 @@ async def whip_anime(channel, im_path):
     """
     
     # do_gif saves a gif called current_whip.gif in the resources folder
-    do_gif(main_gif_path = "resources/whip.gif", image=im_path)
+    do_gif(image=im_path)
 
     # send this gif to the channel
     await channel.send(file=discord.File("resources/current_whip.gif"))
@@ -394,10 +374,6 @@ async def respond_to_message(message, channel):
 
 if __name__ == "__main__":
 
-    # Start the Flask server in a separate thread
-    import threading
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
-    
     # Set up the current user as who will be greeted
     global current_user
     current_user = None
@@ -534,8 +510,6 @@ if __name__ == "__main__":
                 await ctx.send(f"Your will, my hands. *Threshold = {threshold}*")
         else:
             await ctx.send("You are a man who stands only for himself, and would betray the gods to gain what he desires.")
-
-    print_memory_usage()
 
     # this always comes at the end
     bot.run(TOKEN)

@@ -1,15 +1,16 @@
-setuptools
-discord.py==1.7.3
-numpy
-Pillow
-python-dotenv==0.20.0
-requests
+setuptools==75.8.2
+discord.py==2.5.0
+numpy==2.2.3
+Pillow==10.4.0
+python-dotenv==1.0.1
+requests==2.32.3
 torch --index-url https://download.pytorch.org/whl/cpu
 torchvision --index-url https://download.pytorch.org/whl/cpu
-moviepy==1.0.3
-imageio-ffmpeg==0.4.9
-scipy --only-binary scipy
-anthropic
-pypdf2
-psutil
-flask
+moviepy==2.1.2
+imageio-ffmpeg==0.6.0
+scipy==1.15.2
+anthropic==0.49.0
+pypdf2==3.0.1
+psutil==7.0.0
+flask==3.1.0
+pympler==1.1

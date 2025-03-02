@@ -435,7 +435,7 @@ def format_image(smallimage, height, width):
     smallimagenp = np.array(smallimage)/255
     return smallimagenp
 
-def do_gif(main_gif_path = "resources/whip.gif", image="https://ichef.bbci.co.uk/news/976/cpsprodpb/F382/production/_123883326_852a3a31-69d7-4849-81c7-8087bf630251.jpg"):
+def do_gif(main_gif_path = "resources/whip_cropped_small.gif", image="https://ichef.bbci.co.uk/news/976/cpsprodpb/F382/production/_123883326_852a3a31-69d7-4849-81c7-8087bf630251.jpg"):
     """
     Do everything in order.
     """
@@ -446,13 +446,24 @@ def do_gif(main_gif_path = "resources/whip.gif", image="https://ichef.bbci.co.uk
     bigimagenp, smallimage = get_images(main_gif_path, image)
 
     # Resize the small image
-    height, width = adaptive_resize(smallimage.height, smallimage.width)
+    height, width = adaptive_resize(smallimage.height, smallimage.width, target_dim = int(0.75*min(bigimagenp.shape[1], bigimagenp.shape[2])))
 
     # Format the images
     smallimagenp = format_image(smallimage, height, width)
 
     # Split the images and create fragments
-    small_upper, small_lower, upper_fragments, lower_fragments = format_and_split_images_with_shatter(bigimagenp, smallimagenp, topleftpos=(100, 100))
+    small_upper, small_lower, upper_fragments, lower_fragments = format_and_split_images_with_shatter(bigimagenp, smallimagenp, topleftpos=(50, 50))
+
+    # Print memory requirements of all the variables in MB
+    from pympler import asizeof
+    bytes_to_mb = lambda x: round(x / (1024 * 1024), 2)  # Convert bytes to MB
+    print(f"Big image size: {bytes_to_mb(asizeof.asizeof(bigimagenp))} MB (Shape: {bigimagenp.shape})")
+    print(f"Small image size: {bytes_to_mb(asizeof.asizeof(smallimage))} MB (Shape: {smallimage.size})")
+    print(f"Small image np size: {bytes_to_mb(asizeof.asizeof(smallimagenp))} MB (Shape: {smallimagenp.shape})")
+    print(f"Small upper size: {bytes_to_mb(asizeof.asizeof(small_upper))} MB (Shape: {small_upper.shape})")
+    print(f"Small lower size: {bytes_to_mb(asizeof.asizeof(small_lower))} MB (Shape: {small_lower.shape})")
+    print(f"Upper fragments size: {bytes_to_mb(asizeof.asizeof(upper_fragments))} MB (Shape: {upper_fragments[0].shape})")
+    print(f"Lower fragments size: {bytes_to_mb(asizeof.asizeof(lower_fragments))} MB (Shape: {lower_fragments[0].shape})")
 
     # Construct the animation
     construct_animation(bigimagenp, small_upper, small_lower, upper_fragments, lower_fragments)
