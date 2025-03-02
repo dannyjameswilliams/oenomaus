@@ -46,7 +46,6 @@ def generate_response(prompt, message_history):
 
     client = anthropic.Anthropic()
 
-    
     message_history.append({"role": "user", "content": [{"type": "text", "text": prompt}]})
     
     message = client.messages.create(
