@@ -46,12 +46,26 @@ def generate_response(prompt, message_history):
 
     client = anthropic.Anthropic()
 
-    message_history.append({"role": "user", "content": [{"type": "text", "text": prompt}]})
+    message_history.append({
+        "role": "user", 
+        "content": [
+            {
+                "type": "text", 
+                "text": prompt
+            }
+        ]
+    })
     
     message = client.messages.create(
         model="claude-3-5-haiku-20241022",
         max_tokens=3000,
-        system=system_prompt,
+        system=[
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"}
+            }
+        ],
         messages=message_history
     )
 
@@ -59,8 +73,9 @@ def generate_response(prompt, message_history):
 
     message_history.append({"role": "assistant", "content": [{"type": "text", "text": output}]})
 
-    if len(message_history) > 40:
-        message_history = message_history[-40:]
+    # dynamically truncate the message history
+    if len(message_history) > 10:
+        message_history = message_history[-10:]
 
     return output, message_history
 
