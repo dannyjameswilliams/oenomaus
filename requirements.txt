@@ -5,8 +5,8 @@ requests==2.32.3
 python-dotenv==1.0.1
 
 # For model loading
-torch==2.1.0+cpu --index-url https://download.pytorch.org/whl/cpu
-torchvision==0.16.0+cpu --index-url https://download.pytorch.org/whl/cpu
+torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu
+torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cpu
 
 # For GIF processing
 imageio==2.31.1
