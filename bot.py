@@ -485,7 +485,16 @@ if __name__ == "__main__":
             "oenamaus" in message.content.lower() or
             "oenemaus" in message.content.lower() or
             "oenomeus" in message.content.lower() or
-            "oenny" in message.content.lower() 
+            "oenny" in message.content.lower() or
+            "oenomus" in message.content.lower() or
+            "onomaus" in message.content.lower() or
+            "oenomous" in message.content.lower() or
+            "oenamus" in message.content.lower() or
+            "enomaus" in message.content.lower() or
+            "oenomuas" in message.content.lower() or
+            "oenomes" in message.content.lower() or
+            "oenoms" in message.content.lower() or
+            "oneomaus" in message.content.lower()
         ):
             await respond_to_message(message, message.channel)
 
