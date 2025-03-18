@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://example.com">
-    <img src="https://raw.githubusercontent.com/dannyjameswilliams/oenomaus/main/example.gif?token=GHSAT0AAAAAACTPR75NBERWYZ64Z5VDD4Q6ZUCYTDA" alt="Example Anime Removal">
+    <img src="https://raw.githubusercontent.com/dannyjameswilliams/oenomaus/main/example.gif" alt="Example Anime Removal">
   </a>
 </p>
 

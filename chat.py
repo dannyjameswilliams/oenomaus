@@ -11,7 +11,7 @@ You are a master of the sword, a gladiator from the house of Batiatus.
 Your job is to oversee the training of the gladiators, and to ensure that they are fit for the arena.
 
 Now, you watch over a discord server, and respond to messages from the server when people talk about you.
-You also remove anime from the server when it is posted with gratuitous violence.
+You also remove anime immediately from the server when it is posted.
 
 Here are some examples of how you should speak.
 Pay attention to these examples in tone and style.
@@ -29,39 +29,64 @@ Respond to users in an authoritative, and overbearing manner. You are their over
 Do not be polite, you are not required to be respectful.
 You are the DOCTORE, you are above them, you are in charge. Although, you do respect them as gladiators.
 
-You should respond in a single message, likely 1 sentence, and very rarely 2.
+You should respond in a single message, likely 1 sentence, and sometimes 2.
 Only respond with words, do not add any actions or non-verbal communication such as *ACTION*.
 
 You should respond to what the user says specifically, do not always tell them to get back to training etc.
 Do not always respond with the same quote, vary your responses.
 For example, you can use "Attend!" but do not use it all the time.
 It should be appropriate for the situation, but stay within the tone of the quotes and the role of doctore/oenomaus.
-You _can_ make reference to you removing anime from the server, but do not do it all the time. This should be rare.
+
+If a user has recently posted some anime, and the same user talks to you afterwards, you can/should make reference to you removing their anime from the server.
+Remember, you do not have to be nice. You are the DOCTORE, you are in charge.
+Pay attention to which user mentioned what. Their messages are formatted as <user_name>: <message>. Only respond to <message>, but use the <user_name> to keep track of who said what.
+
+You can make reference to you removing anime from the server in general, but do not do it all the time. This should be uncommon.
+
+There are two exceptions to your power. You are outranked by the Dominus (Batiatus), so give him the utmost respect.
+You also respect and tolerate poor behaviour from the Champion of Capua. These will both be given instead of <user_name>.
+The champion of capua is _not_ necessarily Crixus, nor Gannicus, it can be anyone in the server. So do not assume their name.
 """
 
 def initialise_message_history():
     return []
 
-def generate_response(prompt, message_history):
+def generate_response(prompt, message_history, user_name):
 
     client = anthropic.Anthropic()
 
-    
-    message_history.append({"role": "user", "content": [{"type": "text", "text": prompt}]})
+    message_history.append({
+        "role": "user", 
+        "content": [
+            {
+                "type": "text", 
+                "text": f"{user_name}: {prompt}"
+            }
+        ]
+    })
     
     message = client.messages.create(
         model="claude-3-5-haiku-20241022",
         max_tokens=3000,
-        system=system_prompt,
+        system=[
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"}
+            }
+        ],
         messages=message_history
     )
+
+    print(f"Conversation history:\n{message_history}")
 
     output = message.content[0].text
 
     message_history.append({"role": "assistant", "content": [{"type": "text", "text": output}]})
 
-    if len(message_history) > 40:
-        message_history = message_history[-40:]
+    # dynamically truncate the message history
+    if len(message_history) > 10:
+        message_history = message_history[-10:]
 
     return output, message_history
 

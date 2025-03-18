@@ -48,8 +48,32 @@ def find_character_quotes(text_dict):
         for match in matches:
             character = match.group(1)  # The character name
             quote = match.group(2).strip()  # The following sentence
-            
-            if quote:  # Only add if there's actual text
+
+            if quote:
+
+                # check if there are any words with full capital letters
+                if any(word.isupper() for word in quote.split()):
+                    continue
+
+                # if there is a '(', take all characters after the '('
+                if '(' in quote:
+                    quote = quote.split('(')[1].strip()
+
+                if ')' in quote:
+                    quote = quote.split(')')[0].strip()
+
+                # only add if there is more than a few characters
+                if len(quote) < 5:
+                    continue
+
+                # only add if starts with a capital letter
+                if not quote[0].isupper():
+                    continue
+
+                # don't add if it begins with ’ or ,
+                if quote.startswith("’") or quote.startswith(","):
+                    continue
+
                 quotes.append(quote.replace("\n", ""))
     
     return quotes

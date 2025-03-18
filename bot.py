@@ -29,37 +29,13 @@ from animekiller import animeKiller
 import os
 
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 # load function to whip anime images to pieces
 from gifmaker import do_gif
 
 # load chat function
 from chat import generate_response, initialise_message_history
-
-import psutil
-
-from flask import Flask
-
-app = Flask(__name__)
-
-
-@app.route("/")
-def home():
-    return "Bot is running"
-
-
-def print_memory_usage():
-    process = psutil.Process()
-    memory_info = process.memory_info()
-    print(f"Memory Usage: {memory_info.rss / (1024 ** 2):.2f} MB")
-
-
-print_memory_usage()
-
-# MAIN FUNCTIONS
-# --------------
-
 
 # log flag for printing output to console
 log = True
@@ -95,6 +71,9 @@ warning_threshold = 0.6
 # Set up proper answers to greet in advance
 goldenanswer = "Sacred ground Doctore, watered with tears of blood."
 sandanswer = "Sand?"
+
+# who is the dominus?
+dominus = "danman966"
 
 
 # MAIN FUNCTIONS
@@ -262,7 +241,7 @@ async def detect_anime(message):
             print(
                 "User is exempt from anime detection, as they are the Champion of Capua."
             )
-        return False
+        return False, False, ""
 
     # First check: message has an image attachment
     if not is_anime and len(message.attachments) > 0:
@@ -371,10 +350,7 @@ async def whip_anime(channel, im_path):
     """
 
     # do_gif saves a gif called current_whip.gif in the resources folder
-
-    print_memory_usage()
-    do_gif(main_gif_path="resources/whip.gif", image=im_path)
-    print_memory_usage()
+    do_gif(image=im_path)
 
     # send this gif to the channel
     await channel.send(file=discord.File("resources/current_whip.gif"))
@@ -385,8 +361,17 @@ async def remove_anime_message(message, channel):
     Simple function, if anime is detected, remove the message and send a reply.
     """
     global message_history
+
     message_history.append(
-        {"role": "user", "content": [{"type": "text", "text": message.content}]}
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{message.author.name}: {message.content} [*This user message contained an image/GIF of anime, which you removed.*]",
+                }
+            ],
+        }
     )
     message_history.append(
         {
@@ -394,12 +379,14 @@ async def remove_anime_message(message, channel):
             "content": [
                 {
                     "type": "text",
-                    "text": f"{message.author.name}, We will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits. [*You removed their message as it contained an image of anime.*]",
+                    "text": f"{message.author.name}, We will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits.",
                 }
             ],
         }
     )
+
     await message.delete()
+
     await channel.send(
         f"""
         {message.author.name}, we will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits.
@@ -412,25 +399,14 @@ async def warning_anime_message(message, channel):
     Send a warning message if anime is detected but not enough to remove the message.
     """
     global message_history
-    message_history.append(
-        {"role": "user", "content": [{"type": "text", "text": message.content}]}
-    )
-    message_history.append(
-        {
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": f"{message.author.name}, you are testing my patience. [*You warned them as they sent an image of something that might be anime.*]",
-                }
-            ],
-        }
-    )
-    await channel.send(
-        f"""
-        {message.author.name}, you are testing my patience.
-    """
-    )
+
+    # message_history.append({"role": "user", "content": [{"type": "text", "text": f"{message.author.name}: {message.content} [*This user message contained an image/GIF of something that might be anime, which you warned them about.*]"}]})
+    # message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, you are testing my patience."}]})
+
+    # await channel.send(f"""
+    #     {message.author.name}, you are testing my patience.
+    # """)
+    await message.add_reaction(":oenW:")
 
 
 async def respond_to_message(message, channel):
@@ -438,16 +414,22 @@ async def respond_to_message(message, channel):
     Respond to a message from a user.
     """
     global message_history
-    response, message_history = generate_response(message.content, message_history)
+
+    role_names = [role.name for role in message.author.roles]
+    if exempt_role in role_names:
+        user_name = f"Champion of Capua ({message.author.name})"
+    elif message.author.name == dominus:
+        user_name = f"Dominus ({message.author.name})"
+    else:
+        user_name = message.author.name
+
+    response, message_history = generate_response(
+        message.content, message_history, user_name
+    )
     await channel.send(response)
 
 
 if __name__ == "__main__":
-
-    # Start the Flask server in a separate thread
-    import threading
-
-    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=8080)).start()
 
     # Set up the current user as who will be greeted
     global current_user
@@ -563,6 +545,15 @@ if __name__ == "__main__":
             or "oenemaus" in message.content.lower()
             or "oenomeus" in message.content.lower()
             or "oenny" in message.content.lower()
+            or "oenomus" in message.content.lower()
+            or "onomaus" in message.content.lower()
+            or "oenomous" in message.content.lower()
+            or "oenamus" in message.content.lower()
+            or "enomaus" in message.content.lower()
+            or "oenomuas" in message.content.lower()
+            or "oenomes" in message.content.lower()
+            or "oenoms" in message.content.lower()
+            or "oneomaus" in message.content.lower()
         ):
             await respond_to_message(message, message.channel)
 
@@ -589,8 +580,6 @@ if __name__ == "__main__":
             await ctx.send(
                 "You are a man who stands only for himself, and would betray the gods to gain what he desires."
             )
-
-    print_memory_usage()
 
     # this always comes at the end
     bot.run(TOKEN)
