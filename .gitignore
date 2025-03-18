@@ -4,3 +4,6 @@ resources/testanime.png
 ./__pycache__/
 .venv
 .env
+__pycache__/
+__pycache__/*
+resources/current_whip.gif
