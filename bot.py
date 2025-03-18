@@ -1,8 +1,8 @@
 # No longer shall you be my Doctore.
 # You will assume the mantle of lanista,
-# and be warmly greeted by your name, Oenomaus. 
+# and be warmly greeted by your name, Oenomaus.
 
-# bot.py contains all necessary functions for running of the bot, 
+# bot.py contains all necessary functions for running of the bot,
 # and will call other files when needed for more specific tasks
 
 # split into two 'sections' - functions and bot functions (which need bot to be defined first)
@@ -13,7 +13,7 @@
 import numpy as np
 
 # Discord API
-import discord 
+import discord
 from discord.ext import commands
 import asyncio
 
@@ -27,6 +27,7 @@ from animekiller import animeKiller
 
 # get the discord token from the environment variables
 import os
+
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 
@@ -39,16 +40,20 @@ from chat import generate_response, initialise_message_history
 import psutil
 
 from flask import Flask
+
 app = Flask(__name__)
 
-@app.route('/')
+
+@app.route("/")
 def home():
     return "Bot is running"
+
 
 def print_memory_usage():
     process = psutil.Process()
     memory_info = process.memory_info()
     print(f"Memory Usage: {memory_info.rss / (1024 ** 2):.2f} MB")
+
 
 print_memory_usage()
 
@@ -63,7 +68,7 @@ log = True
 noanime_channels = ["the_ludus", "streets-of-capua"]
 
 # which text channel to monitor for new joiners
-recruit_channel  = "the_sands"
+recruit_channel = "the_sands"
 
 # name of the role which is given to new joiners
 new_role = "freshly-bought-slave"
@@ -99,7 +104,7 @@ sandanswer = "Sand?"
 async def ask_new_recruit(member):
     """
     Function to greet a new member who has joined the server.
-    If the user does not reply with an answer related to spartacus 
+    If the user does not reply with an answer related to spartacus
     (proper answers are "sand?" or "Sacred ground Doctore, watered with tears of blood.")
     then they will be kicked from the server.
     """
@@ -134,6 +139,7 @@ async def ask_new_recruit(member):
     # set the global current user as whoever has most recently joined
     current_user = member
 
+
 async def respond_to_new_recruit(message, channel):
     """
     Once the new person has been greeted, this function will respond to their message
@@ -153,7 +159,6 @@ async def respond_to_new_recruit(message, channel):
 
         # read response
         response = message.content
-    
 
         # use SequenceMatcher to get ratio to either best answer or the sand answer
         r_good = SequenceMatcher(a=response, b=goldenanswer).ratio()
@@ -190,29 +195,31 @@ async def respond_to_new_recruit(message, channel):
         elif r_sand > greeting_pass_threshold:
 
             # gladiators laugh at answer like in show (send gif)
-            with open('resources/laughing_gladiators.gif', 'rb') as f:
+            with open("resources/laughing_gladiators.gif", "rb") as f:
                 picture = discord.File(f)
             await channel.send(file=picture)
 
             # Wait a bit and then respond
             await asyncio.sleep(1.5)
-            await channel.send("You will do as commanded, absent complaint, or see flesh stripped from bone.\n")
+            await channel.send(
+                "You will do as commanded, absent complaint, or see flesh stripped from bone.\n"
+            )
             await channel.send("Fall in line with other feeble minded recruits.\n")
 
             # Wait 1 second and change role / remove previous role
             await asyncio.sleep(1)
-            role2 = discord.utils.get(message.guild.roles, name='Recruit')
+            role2 = discord.utils.get(message.guild.roles, name="Recruit")
             await current_user.add_roles(role2)
             await current_user.remove_roles(prev_role)
 
             if log:
                 print("User passed the test with sand answer, given Recruit role.\n")
-        
+
         # response is bad, so kick
         else:
 
             # gladiators laugh at answer like in show (send gif)
-            with open('resources/laughing_gladiators.gif', 'rb') as f:
+            with open("resources/laughing_gladiators.gif", "rb") as f:
                 picture = discord.File(f)
             await channel.send(file=picture)
 
@@ -221,7 +228,9 @@ async def respond_to_new_recruit(message, channel):
             await channel.send("You are not fit to be a gladiator.\n")
 
             await asyncio.sleep(5)
-            await current_user.kick(reason = "Your foolishness has cost a life.  But yours may yet be redeemed -- two fingers, a sign of surrender, a plea of mercy to the Editor of the Games.  Beg for your life, little rabbit.")
+            await current_user.kick(
+                reason="Your foolishness has cost a life.  But yours may yet be redeemed -- two fingers, a sign of surrender, a plea of mercy to the Editor of the Games.  Beg for your life, little rabbit."
+            )
 
             if log:
                 print("User failed the test.\n")
@@ -243,23 +252,30 @@ async def detect_anime(message):
     # pre-defined variables
     is_anime = False
     warning_anime = False
-    im_path  = ""
+    im_path = ""
     message_lines = np.array(message.content.split("\n"))
 
     # The champion of capua is exempt get special rules
     role_names = [role.name for role in message.author.roles]
     if exempt_role in role_names:
         if log:
-            print("User is exempt from anime detection, as they are the Champion of Capua.")
+            print(
+                "User is exempt from anime detection, as they are the Champion of Capua."
+            )
         return False
-
 
     # First check: message has an image attachment
     if not is_anime and len(message.attachments) > 0:
-        
+
         # there is an attachment, check if it is an image
         attachment = message.attachments[0]
-        if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
+        if (
+            attachment.filename.endswith(".jpg")
+            or attachment.filename.endswith(".jpeg")
+            or attachment.filename.endswith(".png")
+            or attachment.filename.endswith(".webp")
+            or attachment.filename.endswith(".gif")
+        ):
 
             im_path = attachment.url
             anime_prob = model.predict(im_path)
@@ -267,31 +283,32 @@ async def detect_anime(message):
             warning_anime = anime_prob > warning_threshold
 
             if log:
-                print(f"Found image attachment named {attachment.filename} in message, checking...\n")
+                print(
+                    f"Found image attachment named {attachment.filename} in message, checking...\n"
+                )
 
-
-    # Another check if the message content contains gif from gif keyboard    
+    # Another check if the message content contains gif from gif keyboard
     which_gifs1 = np.array(["https://tenor.com/view/" in a for a in message_lines])
     if not is_anime and which_gifs1.any():
-    
-       print("Found tenor (probably gif) embed in message, checking...")
 
-       # Possible to have multiple embeds, remove message if any are flagged
-       any_anime = []
-       any_warning_anime = []
-       for embed in message.embeds:
-            if (embed.to_dict()["video"]["url"].endswith(".mp4")):
-               
+        print("Found tenor (probably gif) embed in message, checking...")
+
+        # Possible to have multiple embeds, remove message if any are flagged
+        any_anime = []
+        any_warning_anime = []
+        for embed in message.embeds:
+            if embed.to_dict()["video"]["url"].endswith(".mp4"):
+
                 # Tenor keyboard behaves strangely, it doesn't give a direct URL link to
                 # the gif, so need to convert it
 
                 # Get video (mp4) URL from the embedded attachment
                 video_url = embed.to_dict()["video"]["url"]
-                
+
                 # Convert this MP4 to the corresponding tenor GIF URL (this is some very specific formulation)
-                gif_id = video_url[len("https://media.tenor.com/"):-len(".mp4")]
-                gif_id  = gif_id.split("/")
-                gif_id[0] = gif_id[0][:gif_id[0].find("Po")]
+                gif_id = video_url[len("https://media.tenor.com/") : -len(".mp4")]
+                gif_id = gif_id.split("/")
+                gif_id[0] = gif_id[0][: gif_id[0].find("Po")]
                 gif_id[0] = gif_id[0] + "AC"
                 gif_id = "/".join(gif_id)
                 im_path = "https://c.tenor.com/" + gif_id + ".gif"
@@ -303,16 +320,17 @@ async def detect_anime(message):
                 anime_prob = model.predict(im_path)
                 any_anime.append(anime_prob > anime_threshold)
                 any_warning_anime.append(anime_prob > warning_threshold)
-                
+
             # single flag from any of the embeds is enough to flag the message
             is_anime = any(any_anime)
             warning_anime = any(any_warning_anime)
 
-    
     # Next, check for directly embedded gifs (like sent in a message, or gboard)
-    which_gifs2 = np.array([a.endswith(".gif") for a in message_lines])    # multiple gifs possible?
+    which_gifs2 = np.array(
+        [a.endswith(".gif") for a in message_lines]
+    )  # multiple gifs possible?
     if not is_anime and any(which_gifs2):
-        
+
         for im_path in message_lines[which_gifs2]:
             anime_prob = model.predict(im_path)
             is_anime = anime_prob > anime_threshold
@@ -320,13 +338,12 @@ async def detect_anime(message):
 
             if is_anime or warning_anime:
                 break
-            
-            
+
     # Check for twitter/attached/embedded images:
     if not is_anime and len(message.embeds) > 0:
 
         for att in message.embeds:
-            
+
             if "thumbnail" in dir(att):
                 im_path = att.thumbnail.url
 
@@ -339,7 +356,7 @@ async def detect_anime(message):
 
                 if is_anime or warning_anime:
                     break
-                
+
     if log:
         print(f"Anime detected: {is_anime}")
         print(f"Warning anime detected: {warning_anime}")
@@ -347,40 +364,74 @@ async def detect_anime(message):
     # Return whether anime was detected and the image path (for gif whipping)
     return is_anime, warning_anime, im_path
 
+
 async def whip_anime(channel, im_path):
     """
     Wrapper for the gifmaker function, which will take an image and whip it to pieces.
     """
-    
+
     # do_gif saves a gif called current_whip.gif in the resources folder
-    do_gif(main_gif_path = "resources/whip.gif", image=im_path)
+
+    print_memory_usage()
+    do_gif(main_gif_path="resources/whip.gif", image=im_path)
+    print_memory_usage()
 
     # send this gif to the channel
     await channel.send(file=discord.File("resources/current_whip.gif"))
 
-    
+
 async def remove_anime_message(message, channel):
     """
     Simple function, if anime is detected, remove the message and send a reply.
     """
     global message_history
-    message_history.append({"role": "user", "content": [{"type": "text", "text": message.content}]})
-    message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, We will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits. [*You removed their message as it contained an image of anime.*]"}]})
+    message_history.append(
+        {"role": "user", "content": [{"type": "text", "text": message.content}]}
+    )
+    message_history.append(
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{message.author.name}, We will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits. [*You removed their message as it contained an image of anime.*]",
+                }
+            ],
+        }
+    )
     await message.delete()
-    await channel.send(f"""
+    await channel.send(
+        f"""
         {message.author.name}, we will not tolerate this filth within the Brotherhood. There is only one place for a dog without honour, see yourself to the pits.
-    """)
+    """
+    )
+
 
 async def warning_anime_message(message, channel):
     """
     Send a warning message if anime is detected but not enough to remove the message.
     """
     global message_history
-    message_history.append({"role": "user", "content": [{"type": "text", "text": message.content}]})
-    message_history.append({"role": "assistant", "content": [{"type": "text", "text": f"{message.author.name}, you are testing my patience. [*You warned them as they sent an image of something that might be anime.*]"}]})
-    await channel.send(f"""
+    message_history.append(
+        {"role": "user", "content": [{"type": "text", "text": message.content}]}
+    )
+    message_history.append(
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"{message.author.name}, you are testing my patience. [*You warned them as they sent an image of something that might be anime.*]",
+                }
+            ],
+        }
+    )
+    await channel.send(
+        f"""
         {message.author.name}, you are testing my patience.
-    """)
+    """
+    )
+
 
 async def respond_to_message(message, channel):
     """
@@ -391,20 +442,20 @@ async def respond_to_message(message, channel):
     await channel.send(response)
 
 
-
 if __name__ == "__main__":
 
     # Start the Flask server in a separate thread
     import threading
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
-    
+
+    threading.Thread(target=lambda: app.run(host="0.0.0.0", port=8080)).start()
+
     # Set up the current user as who will be greeted
     global current_user
     current_user = None
 
     # default threshold is 0.65. any probability below that will not be classified.
     global model
-    model = animeKiller("model", threshold = 0.65)
+    model = animeKiller("model", threshold=0.65)
 
     # set up message history for chat
     global message_history
@@ -414,9 +465,7 @@ if __name__ == "__main__":
 
     # permissions so that Oenomaus can change peoples roles
     permissions = discord.Permissions(
-        manage_roles = True, 
-        manage_guild = True, 
-        manage_permissions = True
+        manage_roles=True, manage_guild=True, manage_permissions=True
     )
 
     # new intents thing - give him all the power
@@ -424,10 +473,10 @@ if __name__ == "__main__":
 
     # combine them into a bot
     bot = commands.Bot(
-        command_prefix="!", 
-        case_insensitive=True, 
-        intents=intents, 
-        permissions=permissions
+        command_prefix="!",
+        case_insensitive=True,
+        intents=intents,
+        permissions=permissions,
     )
 
     # Load discord environment and bot token (so it can connect to discord servers)
@@ -438,10 +487,10 @@ if __name__ == "__main__":
     # Print output when bot loads up
     @bot.event
     async def on_ready():
-        print('logged in as')
+        print("logged in as")
         print(bot.user.name)
         print(bot.user.id)
-        print('-----')
+        print("-----")
 
     # inbuilt "on member join" function will ping everyone, clear chat and greet
     @bot.event
@@ -459,14 +508,18 @@ if __name__ == "__main__":
         if log:
             print(f"({message.channel.name}) {message.author.name}: {message.content}")
             print("\n")
-        
-        recruit_channel_0   = discord.utils.get(message.guild.text_channels, name=recruit_channel)
+
+        recruit_channel_0 = discord.utils.get(
+            message.guild.text_channels, name=recruit_channel
+        )
 
         noanime_channel_ids = []
         for channel in noanime_channels:
             if discord.utils.get(message.guild.text_channels, name=channel) is not None:
-                noanime_channel_ids.append(discord.utils.get(message.guild.text_channels, name=channel).id)
-        
+                noanime_channel_ids.append(
+                    discord.utils.get(message.guild.text_channels, name=channel).id
+                )
+
         if log:
             print(f"Message channel ID = {message.channel.id}")
             print(f"Recruit channel ID = {recruit_channel_0.id}")
@@ -476,40 +529,40 @@ if __name__ == "__main__":
             if log:
                 print(f"Responding to new recruit in {recruit_channel_0.name}")
             await respond_to_new_recruit(message, recruit_channel_0)
-            
+
         if message.channel.id in noanime_channel_ids:
 
             if log:
                 print(f"Checking for anime in {message.channel.name}")
-            
+
             is_anime, warning_anime, im_path = await detect_anime(message)
-            
-            if is_anime: # remove message if anime and send a message reply
+
+            if is_anime:  # remove message if anime and send a message reply
 
                 if log:
                     print(f"Whipping/removing anime in {message.channel.name}")
 
                 await whip_anime(message.channel, im_path)
                 await remove_anime_message(message, message.channel)
-            elif warning_anime: # send a warning message
+            elif warning_anime:  # send a warning message
                 await warning_anime_message(message, message.channel)
-        
+
         if (
-            "oenomaus" in message.content.lower() or 
-            "doctore" in message.content.lower() or
-            "oen" in message.content.lower() or 
-            "dotore" in message.content.lower() or
-            "dottore" in message.content.lower() or
-            "oenamaus" in message.content.lower() or
-            "oenemaus" in message.content.lower() or
-            "oenomeus" in message.content.lower() or
-            "onomaeus" in message.content.lower() or
-            "onamaus" in message.content.lower() or
-            "onomeus" in message.content.lower() or
-            "oenamaus" in message.content.lower() or
-            "oenemaus" in message.content.lower() or
-            "oenomeus" in message.content.lower() or
-            "oenny" in message.content.lower() 
+            "oenomaus" in message.content.lower()
+            or "doctore" in message.content.lower()
+            or "oen" in message.content.lower()
+            or "dotore" in message.content.lower()
+            or "dottore" in message.content.lower()
+            or "oenamaus" in message.content.lower()
+            or "oenemaus" in message.content.lower()
+            or "oenomeus" in message.content.lower()
+            or "onomaeus" in message.content.lower()
+            or "onamaus" in message.content.lower()
+            or "onomeus" in message.content.lower()
+            or "oenamaus" in message.content.lower()
+            or "oenemaus" in message.content.lower()
+            or "oenomeus" in message.content.lower()
+            or "oenny" in message.content.lower()
         ):
             await respond_to_message(message, message.channel)
 
@@ -517,8 +570,8 @@ if __name__ == "__main__":
 
     @bot.command(name="threshold")
     async def change_threshold(ctx, *args):
-        
-        global model 
+
+        global model
 
         admin = discord.utils.get(ctx.guild.roles, name=admin_role)
 
@@ -533,7 +586,9 @@ if __name__ == "__main__":
                 model = animeKiller("model", threshold=threshold)
                 await ctx.send(f"Your will, my hands. *Threshold = {threshold}*")
         else:
-            await ctx.send("You are a man who stands only for himself, and would betray the gods to gain what he desires.")
+            await ctx.send(
+                "You are a man who stands only for himself, and would betray the gods to gain what he desires."
+            )
 
     print_memory_usage()
 
