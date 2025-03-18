@@ -59,7 +59,7 @@ exempt_role = "Champion of Capua"
 admin_role = "admin"
 
 # threshold for passing the test of "what lies beneath your feet?"
-greeting_pass_threshold = 0.7
+greeting_pass_threshold = 0.5
 
 # threshold for detecting anime
 global anime_threshold
@@ -101,7 +101,7 @@ async def ask_new_recruit(member):
     await channel.send(member.guild.default_role)
     await channel.send(f"A new slave, {member.name}, has entered the ludus.")
     await asyncio.sleep(5)
-    await channel.purge(limit=10000)
+    await channel.purge(limit=2)
 
     # give new member the role of freshly-bought-slave
     await member.add_roles(role)
@@ -512,7 +512,7 @@ if __name__ == "__main__":
                 print(f"Responding to new recruit in {recruit_channel_0.name}")
             await respond_to_new_recruit(message, recruit_channel_0)
 
-        if message.channel.id in noanime_channel_ids:
+        elif message.channel.id in noanime_channel_ids:
 
             if log:
                 print(f"Checking for anime in {message.channel.name}")
@@ -529,7 +529,7 @@ if __name__ == "__main__":
             elif warning_anime:  # send a warning message
                 await warning_anime_message(message, message.channel)
 
-        if (
+        elif (
             "oenomaus" in message.content.lower()
             or "doctore" in message.content.lower()
             or "oen" in message.content.lower()
