@@ -101,7 +101,7 @@ async def ask_new_recruit(member):
     await channel.send(member.guild.default_role)
     await channel.send(f"A new slave, {member.name}, has entered the ludus.")
     await asyncio.sleep(5)
-    await channel.purge(limit=2)
+    await channel.purge(limit=1000)
 
     # give new member the role of freshly-bought-slave
     await member.add_roles(role)
