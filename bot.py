@@ -98,7 +98,7 @@ async def ask_new_recruit(member):
     channel = discord.utils.get(member.guild.text_channels, name=recruit_channel)
 
     # ping everyone then clear the chat after 5 seconds
-    await channel.send(member.guild.default_role)
+    # await channel.send(member.guild.default_role)
     await channel.send(f"A new slave, {member.name}, has entered the ludus.")
     await asyncio.sleep(5)
     await channel.purge(limit=1000)
