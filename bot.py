@@ -529,7 +529,7 @@ if __name__ == "__main__":
             elif warning_anime:  # send a warning message
                 await warning_anime_message(message, message.channel)
 
-        elif (
+        if (
             "oenomaus" in message.content.lower()
             or "doctore" in message.content.lower()
             or "oen" in message.content.lower()
