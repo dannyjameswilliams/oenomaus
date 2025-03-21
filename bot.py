@@ -563,15 +563,19 @@ if __name__ == "__main__":
     async def change_threshold(ctx, *args):
 
         global model
+        global anime_threshold
+        global warning_threshold
 
         admin = discord.utils.get(ctx.guild.roles, name=admin_role)
-
         threshold = float(args[0])
 
         if admin in ctx.author.roles:
             if threshold > 1 or threshold < 0:
                 await ctx.send("Foolish. *Threshold must be between 0 and 1.*")
             else:
+                anime_threshold = threshold
+                warning_threshold = max(threshold - 0.1, 0)
+
                 if log:
                     print(f"model reloaded with threshold = {threshold}")
                 model = animeKiller("model", threshold=threshold)
