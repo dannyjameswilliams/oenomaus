@@ -46,7 +46,7 @@ You must have Python installed, for which I used Python version 3.8.13, but late
 ```bash
 pip install -r requirements.txt
 ```
-in the root directory to install all prerequisite packages. Then, create a file called `keys.py` in the root directory, with a single variable called `TOKEN` containing your [Discord API Token](https://discord.com/developers/docs/intro) to run the bot on. 
+in the root directory to install all prerequisite packages. Then, create a `.env` file with `DISCORD_TOKEN` containing your [Discord API Token](https://discord.com/developers/docs/intro) to run the bot on.  Also for the LLM usage, you will need an `ANTHROPIC_API_KEY`.
 You must set up the bot within the [Discord Developer Portal](https://discord.com/developers/applications). 
 
 ## Usage
