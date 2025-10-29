@@ -26,6 +26,10 @@ are anime. By default, if the probability of an image being anime is greater tha
 In a brutal fashion, Oenomaus's whip will smash apart the anime image that is detected, before removing it from the channel and issuing a warning to the user that posted it. Each time an anime image is detected, Oenomaus will create a GIF where his whip will slice
 through the image. This generation takes around 5-10 seconds.
 
+### 💬 Chat
+
+Using quotes from the spartacus scripts, Oenomaus will respond to any messages which mention his name as if he was the actual Doctore of the House of Batiatus. This uses Claude as an LLM, with just system prompting to get the style.
+
 ### 👋 New User Welcoming
 
 When a new user joins the discord server, in a specified channel, Oenomaus will ask the user:
