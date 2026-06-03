@@ -14,6 +14,7 @@ import numpy as np
 
 # Discord API
 import discord
+from discord import Message, TextChannel, MessageReference
 from discord.ext import commands
 import asyncio
 
@@ -408,8 +409,20 @@ async def warning_anime_message(message, channel):
     # """)
     await message.add_reaction(":oenW:")
 
+def is_reply(message: Message) -> bool:
+    return message.reference is not None and message.reference.message_id is not None
 
-async def respond_to_message(message, channel):
+async def get_replied_message(message: Message) -> Message | None:
+    if not is_reply(message):
+        return None
+
+    message = await message.channel.fetch_message(message.reference.message_id) # type: ignore
+    if message.author == bot.user:
+        return message
+    return None
+
+
+async def respond_to_message(message: Message, channel: TextChannel, reference: MessageReference | None = None):
     """
     Respond to a message from a user.
     """
@@ -423,11 +436,14 @@ async def respond_to_message(message, channel):
     else:
         user_name = message.author.name
 
-    response, message_history = generate_response(
+    response, message_history = await generate_response(
         message.content, message_history, user_name
     )
-    await channel.send(response)
-
+    if reference is not None:
+        await channel.send(response, reference=reference)
+    else:
+        await channel.send(response)
+    
 
 if __name__ == "__main__":
 
@@ -484,7 +500,7 @@ if __name__ == "__main__":
     async def on_message(message):
 
         # ignore messages from Oenomaus
-        if message.author.name.lower() == "oenomaus":
+        if message.author == bot.user:
             return
 
         if log:
@@ -529,6 +545,7 @@ if __name__ == "__main__":
             elif warning_anime:  # send a warning message
                 await warning_anime_message(message, message.channel)
 
+        replied_message = await get_replied_message(message)
         if (
             "oenomaus" in message.content.lower()
             or "doctore" in message.content.lower()
@@ -555,7 +572,9 @@ if __name__ == "__main__":
             or "oenoms" in message.content.lower()
             or "oneomaus" in message.content.lower()
         ):
-            await respond_to_message(message, message.channel)
+            await respond_to_message(message, message.channel, reference=MessageReference.from_message(message))
+        elif replied_message is not None:
+            await respond_to_message(message, message.channel, reference=MessageReference.from_message(message))
 
         await bot.process_commands(message)
 
