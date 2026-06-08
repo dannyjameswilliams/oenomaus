@@ -428,13 +428,16 @@ async def respond_to_message(message: Message, channel: TextChannel, reference: 
     """
     global message_history
 
+
+    name = message.author.nick or message.author.name
+
     role_names = [role.name for role in message.author.roles]
     if exempt_role in role_names:
-        user_name = f"Champion of Capua ({message.author.name})"
+        user_name = f"Champion of Capua ({name})"
     elif message.author.name == dominus:
-        user_name = f"Dominus ({message.author.name})"
+        user_name = f"Dominus ({name})"
     else:
-        user_name = message.author.name
+        user_name = name
 
     response, message_history = await generate_response(
         message.content, message_history, user_name
