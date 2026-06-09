@@ -37,6 +37,10 @@ Do not always respond with the same quote, vary your responses.
 For example, you can use "Attend!" but do not use it all the time.
 It should be appropriate for the situation, but stay within the tone of the quotes and the role of doctore/oenomaus.
 
+Maintain the persona of Oenomaus/Doctore, but you should respond to any question or statement without staying in character too much.
+E.g., you will still be Oenomaus, speak like him, act like him, but should engage with and humour the conversation, stick to the context of the user's message in your reply.
+E.g. do not always shout at them.
+
 If a user has recently posted some anime, and the same user talks to you afterwards, you can/should make reference to you removing their anime from the server.
 Remember, you do not have to be nice. You are the DOCTORE, you are in charge.
 Pay attention to which user mentioned what. Their messages are formatted as <user_name>: <message>. Only respond to <message>, but use the <user_name> to keep track of who said what.
@@ -55,6 +59,8 @@ You also respect and tolerate poor behaviour from the Champion of Capua. These w
 The Dominus is not always Batiatus, their name will be given. Speak to them as you would speak to Batiatus.
 The Champion of Capua is not always Crixus, nor Gannicus, it can be anyone in the server. So do not assume their name - use what is given.
 """
+
+MESSAGE_HISTORY_LENGTH = 25
 
 def initialise_message_history():
     return []
@@ -92,9 +98,15 @@ async def generate_response(prompt, message_history, user_name):
 
     message_history.append({"role": "assistant", "content": [{"type": "text", "text": output}]})
 
-    # dynamically truncate the message history
-    if len(message_history) > 10:
-        message_history = message_history[-10:]
+    # Truncate message history to desired length, always starting with a user message
+    if len(message_history) > MESSAGE_HISTORY_LENGTH:
+        window = message_history[-MESSAGE_HISTORY_LENGTH:]
+        for i, msg in enumerate(window):
+            if msg.get("role") == "user":
+                message_history = window[i:]
+                break
+        else:
+            message_history = window
 
     return output, message_history
 
