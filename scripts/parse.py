@@ -1,6 +1,12 @@
 import os
 import re
+from pathlib import Path
+
 from PyPDF2 import PdfReader
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+QUOTES_PATH = SCRIPT_DIR.parent / "resources" / "oenomaus_quotes.txt"
+
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from a single PDF file."""
@@ -10,8 +16,10 @@ def extract_text_from_pdf(pdf_path):
         for page in reader.pages:
             text += page.extract_text() + "\n"
         return text
-    except Exception as e:
-        print(f"Error processing {pdf_path}: {str(e)}")
+    # deliberately broad: a single unreadable or malformed PDF should be skipped
+    # rather than abort the whole directory walk
+    except Exception as e:  # noqa: BLE001
+        print(f"Error processing {pdf_path}: {e}")
         return ""
 
 def process_pdf_directory(directory_path):
@@ -41,13 +49,12 @@ def find_character_quotes(text_dict):
     # Regex pattern to find OENOMAUS/DOCTORE and the following sentence
     pattern = r'(OENOMAUS|DOCTORE)\s*(?:\(.*?\))?\s*([^.!?]*[.!?])'
     
-    for filename, text in text_dict.items():
+    for text in text_dict.values():
         # Find all matches in the text
         matches = re.finditer(pattern, text)
-        
+
         for match in matches:
-            character = match.group(1)  # The character name
-            quote = match.group(2).strip()  # The following sentence
+            quote = match.group(2).strip()  # The sentence following the character name
 
             if quote:
 
@@ -71,7 +78,7 @@ def find_character_quotes(text_dict):
                     continue
 
                 # don't add if it begins with ’ or ,
-                if quote.startswith("’") or quote.startswith(","):
+                if quote.startswith(("’", ",")):
                     continue
 
                 quotes.append(quote.replace("\n", ""))
@@ -79,17 +86,12 @@ def find_character_quotes(text_dict):
     return quotes
 
 if __name__ == "__main__":
-    # Specify your directory containing PDFs
-    pdf_directory = "."
-    
     # Process all PDFs
-    extracted_texts = process_pdf_directory(pdf_directory)
+    extracted_texts = process_pdf_directory(SCRIPT_DIR)
 
     # Find character quotes
     quotes = find_character_quotes(extracted_texts)
 
     # save quotes to a file
-    with open("oenomaus_quotes.txt", "w") as f:
-        for quote in quotes:
-            f.write(quote + "\n")
-    
+    with open(QUOTES_PATH, "w") as f:
+        f.writelines(quote + "\n" for quote in quotes)

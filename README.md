@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://example.com">
-    <img src="https://raw.githubusercontent.com/dannyjameswilliams/oenomaus/main/example.gif" alt="Example Anime Removal">
+    <img src="https://raw.githubusercontent.com/dannyjameswilliams/oenomaus/main/resources/example.gif" alt="Example Anime Removal">
   </a>
 </p>
 
@@ -46,7 +46,7 @@ First, clone the github repository via
 ```bash
 git clone https://github.com/dannyjameswilliams/oenomaus/
 ```
-You must have Python installed, for which I used Python version 3.8.13, but later versions *should* work also. Provided you also have [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) installed, run
+You must have Python installed, for which I used Python version 3.8.13, but later versions *should* work also. Provided you also have [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/) installed, run (preferably in a virtual environment)
 ```bash
 pip install -r requirements.txt
 ```

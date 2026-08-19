@@ -1,9 +1,8 @@
 keys.py
 mytoken.py
 resources/testanime.png
-./__pycache__/
 .venv
 .env
+.DS_Store
 __pycache__/
-__pycache__/*
 resources/current_whip.gif

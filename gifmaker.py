@@ -1,18 +1,22 @@
-# PIL for image processing
-from PIL import Image, ImageSequence
+# time for timing functions
+import time
+
+# BytesIO for holding the downloaded image bytes
+from io import BytesIO
 
 # Numpy for matrix manipulation
 import numpy as np
 
+# HTML requests for image download
+import requests
+
+# PIL for image processing
+from PIL import Image, ImageSequence
+
 # Scipy for matrix rotation
 from scipy.ndimage import rotate
 
-# time for timing functions
-import time
-
-# HTML requests for image download
-import requests
-from io import BytesIO
+from paths import CURRENT_WHIP, WHIP_BASE
 
 # log the gif making process (only time taken)
 log = True
@@ -265,11 +269,13 @@ def lower_effects(small_lower, i):
     """
 
     # pad rotated lower image so it moves down by i pixels
-    small_lower = np.vstack((
-        np.nan*np.zeros((int(i*0.75), small_lower.shape[1], 3)),
-        small_lower
-    ))
-    small_lower = small_lower[:-int(i*0.75)] 
+    shift = int(i*0.75)
+    if shift:
+        small_lower = np.vstack((
+            np.nan*np.zeros((shift, small_lower.shape[1], 3)),
+            small_lower
+        ))
+        small_lower = small_lower[:-shift]
 
     # Create a mask of the NaNs
     nan_mask = np.isnan(small_lower)
@@ -327,22 +333,17 @@ def construct_animation(bigimagenp, small_upper, small_lower, upper_fragments, l
         bigimagenp[frame][small_upper_mask] = small_upper[small_upper_mask]
         bigimagenp[frame][small_lower_mask] = small_lower[small_lower_mask]
 
-        for i, fragment in enumerate(upper_fragments):
+        for fragment in upper_fragments:
             upper_fragment_mask = ~np.isnan(fragment)
             bigimagenp[frame][upper_fragment_mask] = fragment[upper_fragment_mask]
-        
-        for i, fragment in enumerate(lower_fragments):
+
+        for fragment in lower_fragments:
             lower_fragment_mask = ~np.isnan(fragment)
             bigimagenp[frame][lower_fragment_mask] = fragment[lower_fragment_mask]
 
         anim[frame, :, :, :] = bigimagenp[frame]
 
-
-    # cut animation to the last frame rendered
-    anim = anim[:frame]
-
-    # Save gif to resources/current_whip.gif
-    numpy_array_to_gif(anim, 'resources/current_whip.gif')
+    numpy_array_to_gif(anim, CURRENT_WHIP)
 
 def numpy_array_to_gif(array, filepath, fps=20):
     """
@@ -355,8 +356,7 @@ def numpy_array_to_gif(array, filepath, fps=20):
     # Calculate the duration for each frame
 
     # duration mod asymptotically approaches 2 as every_n_frames increases
-    duration_mod = lambda x: 2 - 1/(x+1)
-    duration = (1000 // fps) *duration_mod(every_n_frames) # duration in milliseconds
+    duration = (1000 // fps) * (2 - 1/(every_n_frames+1)) # duration in milliseconds
 
     # Save all frames as a GIF
     frames[0].save(filepath, save_all=True, append_images=frames[1:], loop=0, duration=duration)
@@ -371,7 +371,7 @@ def gif_to_numpy_array(bigimage, every_n_frames=every_n_frames):
         frame_array = np.array(frame.convert('RGB'))
         frames.append(frame_array)
     frames_array = np.array(frames)/255
-    return frames_array[np.arange(0, len(frames_array), every_n_frames)]
+    return frames_array[::every_n_frames]
 
 
 def adaptive_resize(height, width, target_dim = 200):
@@ -391,42 +391,20 @@ def adaptive_resize(height, width, target_dim = 200):
 
 def resize_image(img, height, width):
     return img.resize((width, height), Image.Resampling.NEAREST)
-
-def resize_gif(gif, height, width, do_resize=True):
-    """
-    Resize a gif to a new height and width.
-    """
-
-    # resize each frame
-    
-    frames = []
-    for frame in ImageSequence.Iterator(gif):
-        if do_resize:
-            frame = frame.resize((width, height), Image.Resampling.NEAREST)
-        frames.append(frame)
-    
-    # combine frames into gif using pil
-    output_image = frames[0]
-    output_image.save(
-        "resources/resized.gif",
-        save_all=True,
-        append_images=frames[1:],
-        disposal=gif.disposal_method,
-        **gif.info,
-    )    
     
 def get_images(bigpath, smallpath):
 
     bigimage = Image.open(bigpath)
     bigimagenp = gif_to_numpy_array(bigimage)
 
-    response   = requests.get(smallpath)
+    response = requests.get(smallpath)
+    response.raise_for_status()
     smallimage = Image.open(BytesIO(response.content))
-    
+
     # If the image is a GIF, take the first frame
-    if "is_animated" in dir(smallimage):
+    if getattr(smallimage, "is_animated", False):
         smallimage.seek(0)
-    
+
     return bigimagenp, smallimage
 
 def format_image(smallimage, height, width):
@@ -435,7 +413,7 @@ def format_image(smallimage, height, width):
     smallimagenp = np.array(smallimage)/255
     return smallimagenp
 
-def do_gif(main_gif_path = "resources/whip_cropped_small.gif", image="https://ichef.bbci.co.uk/news/976/cpsprodpb/F382/production/_123883326_852a3a31-69d7-4849-81c7-8087bf630251.jpg"):
+def do_gif(main_gif_path = WHIP_BASE, image="https://ichef.bbci.co.uk/news/976/cpsprodpb/F382/production/_123883326_852a3a31-69d7-4849-81c7-8087bf630251.jpg"):
     """
     Do everything in order.
     """
@@ -453,17 +431,6 @@ def do_gif(main_gif_path = "resources/whip_cropped_small.gif", image="https://ic
 
     # Split the images and create fragments
     small_upper, small_lower, upper_fragments, lower_fragments = format_and_split_images_with_shatter(bigimagenp, smallimagenp, topleftpos=(50, 50))
-
-    # Print memory requirements of all the variables in MB
-    from pympler import asizeof
-    bytes_to_mb = lambda x: round(x / (1024 * 1024), 2)  # Convert bytes to MB
-    print(f"Big image size: {bytes_to_mb(asizeof.asizeof(bigimagenp))} MB (Shape: {bigimagenp.shape})")
-    print(f"Small image size: {bytes_to_mb(asizeof.asizeof(smallimage))} MB (Shape: {smallimage.size})")
-    print(f"Small image np size: {bytes_to_mb(asizeof.asizeof(smallimagenp))} MB (Shape: {smallimagenp.shape})")
-    print(f"Small upper size: {bytes_to_mb(asizeof.asizeof(small_upper))} MB (Shape: {small_upper.shape})")
-    print(f"Small lower size: {bytes_to_mb(asizeof.asizeof(small_lower))} MB (Shape: {small_lower.shape})")
-    print(f"Upper fragments size: {bytes_to_mb(asizeof.asizeof(upper_fragments))} MB (Shape: {upper_fragments[0].shape})")
-    print(f"Lower fragments size: {bytes_to_mb(asizeof.asizeof(lower_fragments))} MB (Shape: {lower_fragments[0].shape})")
 
     # Construct the animation
     construct_animation(bigimagenp, small_upper, small_lower, upper_fragments, lower_fragments)

@@ -1,10 +1,12 @@
 import anthropic
 
-# load the quotes from the file
-with open("oenomaus_quotes.txt", "r") as f:
-    quotes = f.readlines()
+from paths import QUOTES
 
-system_prompt = """
+quotes = QUOTES.read_text(encoding="utf-8").splitlines()
+quotes_str = [f"{i+1}. {quote}" for i, quote in enumerate(quotes)]
+
+
+SYSTEM_PROMPT = """
 You are Oenomaus, a super vigilant overseer, ever poised to dominate. 
 You are the doctore of the Ludus, a school of gladiators.
 You are a master of the sword, a gladiator from the house of Batiatus.
@@ -17,12 +19,7 @@ Here are some examples of how you should speak.
 Pay attention to these examples in tone and style.
 ___
 
-"""
-
-quotes_str = [f"{i+1}. {quote}" for i, quote in enumerate(quotes)]
-system_prompt += "\n".join(quotes_str)
-
-system_prompt += """\n\n___
+""" + "\n".join(quotes_str) + """\n\n___
 Recall that your name is Oenomaus, and some refer to you as 'Doctore', an honorary title.
 
 Respond to users in an authoritative, and overbearing manner. You are their overseer, and they are your gladiators, you are responsible for their training and require a firm hand.
@@ -85,7 +82,7 @@ async def generate_response(prompt, message_history, user_name):
         system=[
             {
                 "type": "text",
-                "text": system_prompt,
+                "text": SYSTEM_PROMPT,
                 "cache_control": {"type": "ephemeral"}
             }
         ],

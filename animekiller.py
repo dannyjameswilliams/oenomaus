@@ -4,43 +4,49 @@
 # Convolutional neural network, archiecture trained off fine-tuned ResNet18
 # Freshly trained model had lower accuracy (around 75% compared to 90% of resnet)
 
+# BytesIO for holding the downloaded image bytes
+from io import BytesIO
+
+# Requests for reading image from URL
+import requests
+
 # Pytorch for the model
 import torch
-from torchvision import transforms
 
 # PIL for image processing
 from PIL import Image
 
-# Requests for reading image from URL
-import requests
-from io import BytesIO
+# Torchvision for the preprocessing transforms
+from torchvision import transforms
+
+from paths import MODEL
+
 
 # Create a class for the model
-class animeKiller():
-    
-    def __init__(self, path = "model", threshold = 0.65, log = True):
+class AnimeKiller:
+
+    def __init__(self, path = MODEL, log = True):
         """
-        Init takes model relative path and sets some variables
-        threshold: float, default 0.65 - if probability of being anime is greater than this, it is considered anime. default at 0.65 is to remove more false positives
+        Init takes the model path and sets some variables
         """
-        
+
         self.log = log
-        self.threshold = threshold
         self.input_size = 224
-        
+
         self._load_model(path)
-        
+
         self.transform = transforms.Compose([
-                transforms.RandomResizedCrop(self.input_size),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-            ])      
+            transforms.Resize(256),
+            transforms.CenterCrop(self.input_size),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
 
     def _load_model(self, path):
         self.model = torch.load(path, weights_only = False)
+        self.model.eval()
         if self.log:
-            print(f"Loaded model at path: /{path}")
+            print(f"Loaded model at path: {path}")
 
     def predict(self, image_path):
         """
@@ -49,22 +55,21 @@ class animeKiller():
         """
         # read URL of image
         response = requests.get(image_path)
+        response.raise_for_status()
         im = Image.open(BytesIO(response.content))
-        torch.manual_seed(1)
 
         # If the image is a GIF, take an average of max 64 frames
-        if "is_animated" in dir(im) and im.is_animated:
+        if getattr(im, "is_animated", False):
             num_key_frames = min(im.n_frames, 64)
-            X = torch.empty((num_key_frames, 3, 224, 224))
+            X = torch.empty((num_key_frames, 3, self.input_size, self.input_size))
             for i in range(num_key_frames):
-                im.seek(im.n_frames // num_key_frames * i)
+                im.seek(im.n_frames * i // num_key_frames)
                 X[i, :, :, :] = self.transform(im.convert("RGB"))
-            
-            outputs = self.model(X)
-            
+
+            with torch.no_grad():
+                outputs = self.model(X)
+
             _, pred = torch.max(outputs, 1)
-            probs = torch.sigmoid(outputs[:, 1]).flatten()
-            print(f"probs: {probs}")
             if self.log:
                 print("\nGif frame predictions:")
                 print(pred)
@@ -75,11 +80,13 @@ class animeKiller():
         else:
             im = im.convert("RGB")
             X = self.transform(im)
-            outputs = self.model(X[None, :, :, :])
-            _, pred = torch.max(outputs, 1)
+
+            with torch.no_grad():
+                outputs = self.model(X[None, :, :, :])
+
             probs = torch.sigmoid(outputs).flatten()
 
             if self.log:
-                print(f"probs: {(probs.flatten())}")
+                print(f"probs: {probs}")
 
             return probs[1].item()
