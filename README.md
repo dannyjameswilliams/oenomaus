@@ -61,14 +61,9 @@ python bot.py
 ```
 This will run Oenomaus locally in the terminal, and will continue to be run until it is closed. Alternatively, I have provided the `Dockerfile` within this repository so that you may set up a Docker container to run the python code, and also separately have an [Oenomaus Docker repository](https://hub.docker.com/repository/docker/dannyjameswilliams/oenomaus/general) on the Docker hub, which can be cloned and run completely independently of this repository.
 
-To configure Oenomaus, there are a number of variables to tune within the top of `bot.py`, all commented detailing what they do. Most importantly, you should configure:
-- `noanime_channels` to include all channels you would like Oenomaus to be monitoring and deleting anime images on, 
-- `recruit_channel` to the channel name where Oenomaus will welcome new recruits,
-- `new_role` to the name of the Discord role (which I recommend has zero permissions except for writing in `recruit_channel`) all new members will have,
-- `recruit_role` to the name of the Discord role for those who pass the welcoming test (e.g. this can give them the regular server role),
-- `exempt_role` to the name of the Discord role which is exempt from Oenomaus's gaze, and is free to post any images they would like.
+To configure Oenomaus, there are a number of variables to tune within the top of `bot.py`, all commented detailing what they do. 
 
-
+Have fun!
 
 
 
